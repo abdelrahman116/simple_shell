@@ -7,10 +7,13 @@
 
 #define BUFFER_SIZE 1024
 
-int main(void)
+void shell_0_1(void)
 {
     char buffer[BUFFER_SIZE];
     ssize_t read_size;
+    char *command;
+    char *args[BUFFER_SIZE];
+    int i;
     pid_t pid;
 
     while (1)
@@ -26,10 +29,24 @@ int main(void)
         if (strcmp(buffer, "exit") == 0)
             break;
 
+        command = strtok(buffer, " \t\n");
+        if (command == NULL)
+            continue;
+
+        i = 0;
+        while (i < BUFFER_SIZE)
+        {
+            args[i] = strtok(NULL, " \t\n");
+            if (args[i] == NULL)
+                break;
+            i++;
+        }
+        args[i] = NULL;
+
         pid = fork();
         if (pid == 0)
         {
-            if (execve(buffer, (char *const *)&buffer, NULL) == -1)
+            if (execvp(command, args) == -1)
             {
                 perror("Error");
                 exit(EXIT_FAILURE);
@@ -38,14 +55,12 @@ int main(void)
         else if (pid < 0)
         {
             perror("Error");
-            return (-1);
+            return;
         }
         else
         {
             wait(NULL);
         }
     }
-
-    return (0);
 }
 

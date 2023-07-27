@@ -7,7 +7,7 @@
 
 #define BUFFER_SIZE 1024
 
-int main(void)
+void shell_0_2(void)
 {
     char buffer[BUFFER_SIZE];
     ssize_t read_size;
@@ -55,14 +55,12 @@ int main(void)
         else if (pid < 0)
         {
             perror("Error");
-            return (-1);
+            return;
         }
         else
         {
             wait(NULL);
         }
     }
-
-    return (0);
 }
 
