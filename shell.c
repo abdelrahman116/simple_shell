@@ -151,6 +151,8 @@ void shell_0_3(void)
     char *args[BUFFER_SIZE];
     int i;
     pid_t pid = fork();
+    char *path = _getenv("PATH");
+    char *token = strtok(path, ":");
 
     while (1)
     {
@@ -185,14 +187,12 @@ void shell_0_3(void)
 
         if (pid == 0)
         {
-            char *path = _getenv("PATH");
             if (path == NULL)
             {
                 perror("Error: PATH environment variable not found");
                 exit(EXIT_FAILURE);
             }
 
-            char *token = strtok(path, ":");
             while (token)
             {
                 char command_path[BUFFER_SIZE];

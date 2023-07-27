@@ -1,6 +1,5 @@
 #include <stdio.h>
-#include "shell_0.1.c"
-#include "shell_0.2.c"
+#include "shell.h"
 
 int main(void)
 {
