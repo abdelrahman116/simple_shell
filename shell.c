@@ -3,87 +3,217 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-#include <string.h>   /* Add this for strtok */
+#include <string.h>
 
 #define BUFFER_SIZE 1024
 
-/**
- * execute_command - Execute a single command with arguments
- * @command: The command to be executed
- * @args: An array of arguments, including the command itself
- * Return: On success, returns 0. On failure, returns -1.
- */
-int execute_command(char *command, char **args)
+char *_getenv(const char *name)
 {
-    	pid_t pid;
-	int status;
+    extern char **environ;
 
-	pid = fork();
-	if (pid == 0)
-	{
-		/* Child process */
-		if (execvp(command, args) == -1)
-		{
-			perror("Error");
-			exit(EXIT_FAILURE);
-		}
-	}
-	else if (pid < 0)
-	{
-		/* Fork failed */
-		perror("Error");
-		return (-1);
-	}
-	else
-	{
-		/* Parent process */
-		do {
-			waitpid(pid, &status, WUNTRACED);
-		} while (!WIFEXITED(status) && !WIFSIGNALED(status));
-	}
+    int i = 0;
+    while (environ[i] != NULL)
+    {
+        char *key = strtok(environ[i], "=");
+        char *value = strtok(NULL, "=");
 
-	return (0);
+        if (strcmp(key, name) == 0)
+            return value;
+
+        i++;
+    }
+
+    return NULL;
 }
 
-/**
- * main - Simple shell main function
- * Return: Always 0.
- */
-int main(void)
+void shell_0_1(void)
 {
     char buffer[BUFFER_SIZE];
     ssize_t read_size;
-    char *command, *args[BUFFER_SIZE];
+    char *command;
+    char *args[BUFFER_SIZE];
     int i;
+    pid_t pid = fork();
 
     while (1)
     {
-        write(1, "$ ", 2);
+        char *prompt = _getenv("USER");
+        if (prompt)
+            write(1, prompt, strlen(prompt));
+        else
+            write(1, "$ ", 2);
+
         read_size = read(0, buffer, BUFFER_SIZE);
         if (read_size <= 0)
             break;
 
         buffer[read_size - 1] = '\0';
 
+        if (strcmp(buffer, "exit") == 0)
+            break;
 
-		command = strtok(buffer, " \t\n");
-		if (command == NULL)
-			continue;
+        command = strtok(buffer, " \t\n");
+        if (command == NULL)
+            continue;
 
-		i = 0;
-		while (i < BUFFER_SIZE)
-		{
-			args[i] = strtok(NULL, " \t\n");
-			if (args[i] == NULL)
-				break;
-			i++;
-		}
-		args[i] = NULL;
+        i = 0;
+        while (i < BUFFER_SIZE)
+        {
+            args[i] = strtok(NULL, " \t\n");
+            if (args[i] == NULL)
+                break;
+            i++;
+        }
+        args[i] = NULL;
 
-		execute_command(command, args);
-
+        if (pid == 0)
+        {
+            if (execvp(command, args) == -1)
+            {
+                perror("Error");
+                exit(EXIT_FAILURE);
+            }
+        }
+        else if (pid < 0)
+        {
+            perror("Error");
+            return;
+        }
+        else
+        {
+            wait(NULL);
+        }
     }
+}
 
-    return (0);
+void shell_0_2(void)
+{
+    char buffer[BUFFER_SIZE];
+    ssize_t read_size;
+    char *command;
+    char *args[BUFFER_SIZE];
+    int i;
+    pid_t pid;
+
+    while (1)
+    {
+        write(1, "#cisfun$ ", 9);
+
+        read_size = read(0, buffer, BUFFER_SIZE);
+        if (read_size <= 0)
+            break;
+
+        buffer[read_size - 1] = '\0';
+
+        if (strcmp(buffer, "exit") == 0)
+            break;
+
+        command = strtok(buffer, " \t\n");
+        if (command == NULL)
+            continue;
+
+        i = 0;
+        while (i < BUFFER_SIZE)
+        {
+            args[i] = strtok(NULL, " \t\n");
+            if (args[i] == NULL)
+                break;
+            i++;
+        }
+        args[i] = NULL;
+
+        pid = fork();
+        if (pid == 0)
+        {
+            if (execvp(command, args) == -1)
+            {
+                perror("Error");
+                exit(EXIT_FAILURE);
+            }
+        }
+        else if (pid < 0)
+        {
+            perror("Error");
+            return;
+        }
+        else
+        {
+            wait(NULL);
+        }
+    }
+}
+
+void shell_0_3(void)
+{
+    char buffer[BUFFER_SIZE];
+    ssize_t read_size;
+    char *command;
+    char *args[BUFFER_SIZE];
+    int i;
+    pid_t pid = fork();
+
+    while (1)
+    {
+        char *prompt = _getenv("USER");
+        if (prompt)
+            write(1, prompt, strlen(prompt));
+        else
+            write(1, ":) ", 3);
+
+        read_size = read(0, buffer, BUFFER_SIZE);
+        if (read_size <= 0)
+            break;
+
+        buffer[read_size - 1] = '\0';
+
+        if (strcmp(buffer, "exit") == 0)
+            break;
+
+        command = strtok(buffer, " \t\n");
+        if (command == NULL)
+            continue;
+
+        i = 0;
+        while (i < BUFFER_SIZE)
+        {
+            args[i] = strtok(NULL, " \t\n");
+            if (args[i] == NULL)
+                break;
+            i++;
+        }
+        args[i] = NULL;
+
+        if (pid == 0)
+        {
+            char *path = _getenv("PATH");
+            if (path == NULL)
+            {
+                perror("Error: PATH environment variable not found");
+                exit(EXIT_FAILURE);
+            }
+
+            char *token = strtok(path, ":");
+            while (token)
+            {
+                char command_path[BUFFER_SIZE];
+                snprintf(command_path, BUFFER_SIZE, "%s/%s", token, command);
+                execvp(command_path, args);
+                token = strtok(NULL, ":");
+            }
+
+
+            perror("Error: Command not found");
+            exit(EXIT_FAILURE);
+        }
+        else if (pid < 0)
+        {
+            perror("Error");
+            return;
+        }
+        else
+        {
+            wait(NULL);
+        }
+    }
 }
 
